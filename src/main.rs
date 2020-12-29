@@ -1,14 +1,14 @@
+use anyhow::Result;
 use clap::Clap;
+use std::io::{stdout, BufWriter};
 use std::path::PathBuf;
-use anyhow::{Result};
-use std::io::{BufWriter, stdout};
 use unity_metafile_checker::app::MetaFileChecker;
 
 #[derive(Clap, Debug)]
 #[clap(
-name = "unity_metafile_checker",
-author = "neptaco",
-about = "check unity-metafiles"
+    name = "unity_metafile_checker",
+    author = "neptaco",
+    about = "check unity-metafiles"
 )]
 struct Opts {
     #[clap(short, long)]
@@ -17,7 +17,6 @@ struct Opts {
     #[clap(short, long)]
     path: Option<PathBuf>,
 }
-
 
 fn main() -> Result<()> {
     pretty_env_logger::init();
@@ -38,4 +37,3 @@ fn main() -> Result<()> {
 
     Ok(())
 }
-

@@ -1,10 +1,9 @@
-use std::fs;
-use std::path::PathBuf;
-use std::fs::read_dir;
 use anyhow::{ensure, Result};
-use std::io::Write;
 use pathdiff::diff_paths;
-
+use std::fs;
+use std::fs::read_dir;
+use std::io::Write;
+use std::path::PathBuf;
 
 pub struct MetaFileChecker {
     /// asset exists, but not exists meta file
@@ -14,9 +13,7 @@ pub struct MetaFileChecker {
     missing_assets: Vec<PathBuf>,
 }
 
-
 impl MetaFileChecker {
-
     pub fn new() -> Self {
         Self {
             missing_meta_files: Vec::new(),
@@ -67,7 +64,6 @@ impl MetaFileChecker {
     }
 
     fn is_empty_dir(path: &PathBuf) -> Result<bool> {
-
         ensure!(path.is_dir(), "file not supported args. {}", path.display());
 
         for entry in read_dir(path)? {
@@ -78,7 +74,7 @@ impl MetaFileChecker {
             }
 
             if !Self::is_empty_dir(&path)? {
-                return Ok(false)
+                return Ok(false);
             }
         }
 
@@ -86,7 +82,6 @@ impl MetaFileChecker {
     }
 
     pub fn check(&mut self, parent: &PathBuf) -> Result<()> {
-
         let entries = fs::read_dir(parent)?;
 
         for entry in entries {
@@ -101,8 +96,7 @@ impl MetaFileChecker {
                 if !asset_path.exists() {
                     self.missing_assets.push(path)
                 }
-            }
-            else {
+            } else {
                 let meta_path = Self::get_meta_path(&path);
                 if !meta_path.exists() {
                     debug!("metafile missing -> [{}]", meta_path.display());
@@ -139,5 +133,4 @@ impl MetaFileChecker {
 
         Ok(())
     }
-
 }
