@@ -16,6 +16,9 @@ struct Opts {
 
     #[clap(short, long)]
     path: Option<PathBuf>,
+
+    #[clap(long)]
+    base_path: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -31,9 +34,11 @@ fn main() -> Result<()> {
     let mut checker = MetaFileChecker::default();
     checker.check(&path)?;
 
+    let base_path = opts.base_path.unwrap_or(path);
+
     let stdout = stdout();
     let mut writer = BufWriter::new(stdout.lock());
-    checker.show_results(&mut writer, &path)?;
+    checker.show_results(&mut writer, &base_path)?;
 
     Ok(())
 }
