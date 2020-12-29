@@ -1,0 +1,83 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  release:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        rust: [stable]
+        include:
+          - os: macos-latest
+            artifact_os: macos
+            target: x86_64-apple-darwin
+            binary_extension: ""
+          - os: ubuntu-latest
+            artifact_os: linux
+            target: x86_64-unknown-linux-gnu
+            binary_extension: ""
+          - os: windows-latest
+            artifact_os: windows
+            target: x86_64-pc-windows-msvc
+            binary_extension: ".exe"
+    runs-on: ${{ matrix.os }}
+
+    env:
+      ARTIFACT_NAME: "unity-metafile-checker-${{ matrix.artifact_os }}"    
+      BINARY_NAME: "unity-metafile-checker${{ matrix.binary_extension }}"
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Installing Rust toolchain # library download
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      # set release tag(*.*.*) to env.GIT_TAG
+      - run: echo "GIT_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Installing needed macOS dependencies
+        if: matrix.os == 'macos-latest'
+        run: brew install openssl@1.1
+      - name: Installing needed Ubuntu dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y -qq pkg-config libssl-dev libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev
+
+      - uses: actions/cache@v2 # 実行高速化のためのキャッシュ
+        with:
+          path: |
+            target
+          key: ${{ runner.os }}-cargo-publish-${{ matrix.toolchain }}-${{ hashFiles('**/Cargo.lock') }}
+      - name: Running cargo build # releaseビルド実行
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          toolchain: ${{ matrix.rust }}
+          args: --release --target ${{ matrix.target }}
+
+      - name: Packaging final binary # packageのファイナルビルド
+        shell: bash
+        run: |
+          cd target/${{ matrix.target }}/release
+          strip ${{ env.BINARY_NAME }} # デバッグ用のシンボルとかを削除する
+          tar czvf ${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.tar.gz ${{ env.BINARY_NAME }} # tz圧縮
+          # sha256 のハッシュ値がないとhomebrew でのダウンロード時に不正なソフトと言われるので以下は必ず入れる
+          if [[ ${{ runner.os }} == 'Windows' ]]; then
+            certutil -hashfile ${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.tar.gz sha256 | grep -E [A-Fa-f0-9]{64} > ${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.sha256
+          else
+            shasum -a 256 ${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.tar.gz > ${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.sha256
+          fi
+      - name: Releasing assets # releaseページに貼り付ける
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            target/${{ matrix.target }}/release/${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.tar.gz
+            target/${{ matrix.target }}/release/${{ env.ARTIFACT_NAME }}-${{ env.GIT_TAG }}.sha256
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
