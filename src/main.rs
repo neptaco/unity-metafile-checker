@@ -6,9 +6,9 @@ use unity_metafile_checker::app::MetaFileChecker;
 
 #[derive(Clap, Debug)]
 #[clap(
-    name = "unity_metafile_checker",
+    name = "unity-metafile-checker",
     author = "neptaco",
-    about = "check unity-metafiles"
+    about = "Check missing meta files for Unity",
 )]
 struct Opts {
     #[clap(short, long)]
