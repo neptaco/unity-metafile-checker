@@ -1,5 +1,5 @@
 [package]
-name = "unity_metafile_checker"
+name = "unity-metafile-checker"
 version = "0.1.0"
 authors = ["neptaco <neptacox@gmail.com>"]
 edition = "2018"
