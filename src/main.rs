@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::Clap;
 use std::io::{stdout, BufWriter};
 use std::path::PathBuf;
@@ -25,7 +25,7 @@ fn main() -> Result<()> {
     let path = opts.path.unwrap_or_else(|| PathBuf::from("."));
 
     if !(path.exists() && path.is_dir()) {
-        eprintln!("{} required exists directory.", path.display());
+        bail!("{} required exists directory.", path.display());
     }
 
     let mut checker = MetaFileChecker::default();
