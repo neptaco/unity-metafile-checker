@@ -7,7 +7,7 @@ use unity_metafile_checker::app::MetaFileChecker;
 #[derive(Clap, Debug)]
 #[clap(
     name = "unity-metafile-checker",
-    author = "neptaco",
+    author = "neptaco <neptacox@gmail.com>",
     about = "Check missing meta files for Unity",
 )]
 struct Opts {
