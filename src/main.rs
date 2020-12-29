@@ -22,13 +22,13 @@ fn main() -> Result<()> {
     pretty_env_logger::init();
 
     let opts = Opts::parse();
-    let path = opts.path.unwrap_or(PathBuf::from("."));
+    let path = opts.path.unwrap_or_else(|| PathBuf::from("."));
 
     if !(path.exists() && path.is_dir()) {
         eprintln!("{} required exists directory.", path.display());
     }
 
-    let mut checker = MetaFileChecker::new();
+    let mut checker = MetaFileChecker::default();
     checker.check(&path)?;
 
     let stdout = stdout();

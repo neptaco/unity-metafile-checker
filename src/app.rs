@@ -5,6 +5,7 @@ use std::fs::read_dir;
 use std::io::Write;
 use std::path::PathBuf;
 
+#[derive(Default)]
 pub struct MetaFileChecker {
     /// asset exists, but not exists meta file
     missing_meta_files: Vec<PathBuf>,
@@ -14,13 +15,6 @@ pub struct MetaFileChecker {
 }
 
 impl MetaFileChecker {
-    pub fn new() -> Self {
-        Self {
-            missing_meta_files: Vec::new(),
-            missing_assets: Vec::new(),
-        }
-    }
-
     fn is_extension_equals(path: &PathBuf, ext: &str) -> bool {
         path.extension().map(|x| x == ext).unwrap_or(false)
     }
@@ -28,7 +22,7 @@ impl MetaFileChecker {
     fn is_ignore_file(path: &PathBuf) -> Result<bool> {
         let file_name = path.file_name().unwrap().to_string_lossy();
 
-        if file_name.starts_with(".") || file_name.ends_with("~") {
+        if file_name.starts_with('.') || file_name.ends_with('~') {
             return Ok(true);
         }
         if file_name == "cvs" {
@@ -78,7 +72,7 @@ impl MetaFileChecker {
             }
         }
 
-        return Ok(true);
+        Ok(true)
     }
 
     pub fn check(&mut self, parent: &PathBuf) -> Result<()> {
@@ -114,19 +108,19 @@ impl MetaFileChecker {
 
     pub fn show_results<W: Write>(&self, writer: &mut W, base_path: &PathBuf) -> Result<()> {
         if !self.missing_meta_files.is_empty() {
-            write!(writer, "Missing metafiles:\n")?;
+            writer.write_all(b"Missing metafiles:\n")?;
             for metafile in &self.missing_meta_files {
                 if let Some(relative_path) = diff_paths(metafile, base_path) {
-                    write!(writer, "\t{}\n", relative_path.display())?;
+                    writeln!(writer, "\t{}", relative_path.display())?;
                 }
             }
         }
 
         if !self.missing_assets.is_empty() {
-            write!(writer, "Missing assets:\n")?;
+            writer.write_all(b"Missing assets:\n")?;
             for asset in &self.missing_assets {
                 if let Some(relative_path) = diff_paths(asset, base_path) {
-                    write!(writer, "\t{}\n", relative_path.display())?;
+                    writeln!(writer, "\t{}", relative_path.display())?;
                 }
             }
         }
