@@ -9,7 +9,7 @@ use unity_metafile_checker::app::MetaFileChecker;
     name = "unity-metafile-checker",
     author = "neptaco <neptacox@gmail.com>",
     version = "0.1.1",
-    about = "Check missing meta files for Unity",
+    about = "Check missing meta files for Unity"
 )]
 struct Opts {
     #[clap(short, long)]
